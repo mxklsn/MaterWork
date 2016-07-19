@@ -56,16 +56,24 @@ namespace OpenGlTemplateApp.Methods
             for (int i = 0; i < property.Ox.Length - 1; i++)
             {
                 var newIn = tmp[tmp.Count - 1]; // new Interval
+                var pointsOnFirstInterval = _getIntervalSteps(  // точки на текущем интервале
+                    Input.Points.PointsByX[newIn.PointsNumbers[0]], 
+                    Input.Points.PointsByX[newIn.PointsNumbers[1]], 
+                    newIn.N, 
+                    newIn.Q);
+                var h0 = _getLengthLine(  // длина последнего шага
+                    pointsOnFirstInterval[pointsOnFirstInterval.Count - 2],
+                    pointsOnFirstInterval[pointsOnFirstInterval.Count - 1]);
+                
                 tmp.Add(
                     _calcNewIntervalProperty(
                         newIn.PointsNumbers[1] + 1, 
                         newIn.PointsNumbers[1], 
                         property.Ox[newIn.PointsNumbers[1]],
-                        newIn.Q, 
+                        h0, 
                         Input.Points.PointsByX[newIn.PointsNumbers[1]].X,
                         Input.Points.PointsByX[newIn.PointsNumbers[1] + 1].X));
             }
-
             IntervalPropertyX = tmp;
 
             // для Y
@@ -94,12 +102,22 @@ namespace OpenGlTemplateApp.Methods
             for (int i = 0; i < property.Oy.Length - 1; i++)
             {
                 var newIn = tmp[tmp.Count - 1]; // new Interval
+                var pointsOnFirstInterval = _getIntervalSteps(  // точки на текущем интервале
+                    Input.Points.PointsByY[newIn.PointsNumbers[0]],
+                    Input.Points.PointsByY[newIn.PointsNumbers[1]],
+                    newIn.N,
+                    newIn.Q);
+                var h0 = _getLengthLine(  // длина последнего шага
+                    pointsOnFirstInterval[pointsOnFirstInterval.Count - 2],
+                    pointsOnFirstInterval[pointsOnFirstInterval.Count - 1]);
+
                 tmp.Add(
                     _calcNewIntervalProperty(
                         newIn.PointsNumbers[1] + 1, 
                         newIn.PointsNumbers[1], 
                         property.Oy[newIn.PointsNumbers[1]],
-                        newIn.Q, Input.Points.PointsByY[newIn.PointsNumbers[1]].Y, 
+                        h0, 
+                        Input.Points.PointsByY[newIn.PointsNumbers[1]].Y, 
                         Input.Points.PointsByY[newIn.PointsNumbers[1] + 1].Y));
             }
             IntervalPropertyY = tmp;
@@ -130,12 +148,21 @@ namespace OpenGlTemplateApp.Methods
             for (int i = 0; i < property.Oz.Length - 1; i++)
             {
                 var newIn = tmp[tmp.Count - 1]; // new Interval
+                var pointsOnFirstInterval = _getIntervalSteps(  // точки на текущем интервале
+                    Input.Points.PointsByZ[newIn.PointsNumbers[0]],
+                    Input.Points.PointsByZ[newIn.PointsNumbers[1]],
+                    newIn.N,
+                    newIn.Q);
+                var h0 = _getLengthLine(  // длина последнего шага
+                    pointsOnFirstInterval[pointsOnFirstInterval.Count - 2],
+                    pointsOnFirstInterval[pointsOnFirstInterval.Count - 1]);
                 tmp.Add(
                     _calcNewIntervalProperty(
                         newIn.PointsNumbers[1] + 1,
                         newIn.PointsNumbers[1],
                         property.Oz[newIn.PointsNumbers[1]],
-                        newIn.Q, Input.Points.PointsByZ[newIn.PointsNumbers[1]].Z,
+                        h0, 
+                        Input.Points.PointsByZ[newIn.PointsNumbers[1]].Z,
                         Input.Points.PointsByZ[newIn.PointsNumbers[1] + 1].Z));
             }
             IntervalPropertyZ = tmp;
@@ -271,6 +298,7 @@ namespace OpenGlTemplateApp.Methods
             var eps = sN / 10000000000000;
             double qMin = 1;
             double qMax = 100;
+            double qOld = q;
 
             q = Math.Abs(q);
             var s = _calsSn(h, q, n);
@@ -287,6 +315,11 @@ namespace OpenGlTemplateApp.Methods
                 q = (qMax + qMin) / 2;
                 s = _calsSn(h, q, n);
             }
+
+            if (qOld < -1)
+            {
+                q =  1/q;
+            }
             return q;
         }
 
@@ -297,41 +330,81 @@ namespace OpenGlTemplateApp.Methods
             return h * (1 - Math.Pow(q, n)) / (1 - q);
         }
 
-        /* Получаем последний шаг на первом интевале
+
+        /* Возвращает длину всех интервалов числу
          */
-        private double[] _getIntervalSteps(double length, double q, int n)
+        private double[] _getIntevlsByLength(double length, int count, double coef)
         {
             var h = -1.0;
-            var lengthIntervals = new double[n];
-            for (int i = 0; i < n; i++)
+            var lengthIntervals = new double[count];
+            for (int i = 0; i < count; i++)
             {
-                if (q == 1.0) // если коэф. раст¤жени¤ = 1
+                if (coef == 1.0) // если коэф. раст¤жени¤ = 1
                 {
-                    h = length / n;
+                    h = length / count;
                 }
-                else if (h != -1.0 && q != 1.0)
+                else if (h != -1.0 && coef != 1.0)
                 {
-                    if (q < 0)
+                    if (coef < 0)
                     {
-                        double coefExp1 = 1 / Math.Abs(q);
+                        double coefExp1 = 1 / Math.Abs(coef);
                         h = h * coefExp1;
                     }
-                    else h = h * q;
+                    else h = h * coef;
                 }
                 else
                 {
-                    if (q < 0)
+                    if (coef < 0)
                     {
-                        double coefExp1 = 1 / Math.Abs(q);
-                        h = length * (1 - coefExp1) / (1 - Math.Pow(coefExp1, q));  //считаем первый шаг
+                        double coefExp1 = 1 / Math.Abs(coef);
+                        h = length * (1 - coefExp1) / (1 - Math.Pow(coefExp1, count));  //считаем первый шаг
                     }
                     else
-                        h = length * (1 - q) / (1 - Math.Pow(q, n));  //считаем первый шаг
+                        h = length * (1 - coef) / (1 - Math.Pow(coef, count));  //считаем первый шаг
                 }
 
                 lengthIntervals[i] = h;
             }
             return lengthIntervals;
+        }
+
+        /* Получитьпоследний шаг на интервале
+         */
+        private List<Point> _getIntervalSteps(Point p1, Point p2, int count, double coef)
+        {
+            var result = new List<Point>();
+            var changeX = _getIntevlsByLength(Math.Abs(p2.X - p1.X), count, coef);
+            var changeY = _getIntevlsByLength(Math.Abs(p2.Y - p1.Y), count, coef);
+            var changeZ = _getIntevlsByLength(Math.Abs(p2.Z - p1.Z), count, coef);
+
+            result.Add(p1);
+            for (int i = 0; i < changeX.Length; i++)
+            {
+                if (i == 0)
+                {
+                    result.Add(new Point(
+                        p1.X + changeX[i],
+                        p1.Y + changeY[i],
+                        p1.Z + changeZ[i]));
+                }
+                else
+                {
+                    var previosPoint = result[result.Count - 1];
+                    result.Add(new Point(
+                        previosPoint.X + changeX[i],
+                        previosPoint.Y + changeY[i],
+                        previosPoint.Z + changeZ[i]));
+                }
+            }
+            return result;
+        }
+
+
+        /* Возвращает длину линии в трехмерном пространстве
+         */
+        private double _getLengthLine(Point p1, Point p2)
+        {
+            return Math.Sqrt(Math.Pow((p1.X - p2.X), 2) + Math.Pow((p1.Y - p2.Y), 2) + Math.Pow((p1.Z - p2.Z), 2));
         }
     }
 }

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 //using System.Runtime.Serialization.Json;
 using Newtonsoft.Json;
 
@@ -10,6 +11,8 @@ namespace OpenGlTemplateApp
     internal class ModelData
     {
         private readonly string _filePath;
+
+        public List<double> PointsDll { get; set; }
 
         public ModelData(string filePath)
         {
@@ -32,7 +35,7 @@ namespace OpenGlTemplateApp
             //throw new NotImplementedException();
         }
 
-        public void SaveArray(List<Element> elements, double dxCoefficient, string filePath)
+        public void SaveArray(List<Element> elements, double dxCoefficient)
         {
             var array = new List<double>();
             for (int element = 0; element < elements.Count; element++)
@@ -44,8 +47,7 @@ namespace OpenGlTemplateApp
                     array.Add(dxCoefficient * elements[element].Points[point].Z);
                 }
             }
-            string json = JsonConvert.SerializeObject(array.ToArray());
-            System.IO.File.WriteAllText(filePath, json);
+            PointsDll = array;
         }
     }
 }

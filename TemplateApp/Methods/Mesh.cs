@@ -9,7 +9,7 @@ namespace OpenGlTemplateApp.Methods
     {
         public DataPoints GlobalPoints { set; get; }
 
-        public double MeshParam { set; get; }
+        public int MeshParam { set; get; }
 
         public List<GetIntervals.NewIntervalProperty> PropertyX { set; get; }
 
@@ -19,7 +19,7 @@ namespace OpenGlTemplateApp.Methods
 
         public List<Element> ElementsGrid { get; set; }
 
-        public Mesh(double meshParam, GetIntervals newProperty)
+        public Mesh(int meshParam, GetIntervals newProperty)
         {
             MeshParam = meshParam;
             GlobalPoints = newProperty.Input.Points;
@@ -38,8 +38,8 @@ namespace OpenGlTemplateApp.Methods
                 tmpX.Add(_getPointsByLine(
                     GlobalPoints.PointsByX[PropertyX[i].PointsNumbers[0]],
                     GlobalPoints.PointsByX[PropertyX[i].PointsNumbers[1]],
-                    PropertyX[i].N,
-                    PropertyX[i].Q));
+                    PropertyX[i].N * Convert.ToInt32(Math.Pow(2, MeshParam)),
+                    Math.Pow(PropertyX[i].Q, 1.0 / (MeshParam + 1))));
             }
 
             var tmpY = new List<List<Point>>();
@@ -48,8 +48,8 @@ namespace OpenGlTemplateApp.Methods
                 tmpY.Add(_getPointsByLine(
                     GlobalPoints.PointsByY[PropertyY[i].PointsNumbers[0]],
                     GlobalPoints.PointsByY[PropertyY[i].PointsNumbers[1]],
-                    PropertyY[i].N,
-                    PropertyY[i].Q));
+                    PropertyY[i].N*Convert.ToInt32(Math.Pow(2, MeshParam)),
+                    Math.Pow(PropertyY[i].Q, 1.0/(MeshParam + 1))));
             }
 
             var tmpZ = new List<List<Point>>();
@@ -58,8 +58,8 @@ namespace OpenGlTemplateApp.Methods
                 tmpZ.Add(_getPointsByLine(
                     GlobalPoints.PointsByZ[PropertyZ[i].PointsNumbers[0]],
                     GlobalPoints.PointsByZ[PropertyZ[i].PointsNumbers[1]],
-                    PropertyZ[i].N,
-                    PropertyZ[i].Q));
+                    PropertyZ[i].N*Convert.ToInt32(Math.Pow(2, MeshParam)),
+                    Math.Pow(PropertyZ[i].Q, 1.0/(MeshParam + 1))));
             }
 
 

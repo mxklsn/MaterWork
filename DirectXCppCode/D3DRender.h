@@ -276,15 +276,18 @@ namespace DX
 			}
 		}
 
-		RenderingUnit CreateLineColorUnit(std::vector<std::array<std::vector<int>, 3>>& Triangles, std::vector<std::array<double, 3>>& vertexes, std::vector<std::array<double, 3>>& normals) //в паре первое -- треугольник, второе -- rgb цвет
+		RenderingUnit CreateLineColorUnit(
+			std::vector<std::array<std::vector<int>, 3>>& Triangles,
+			std::vector<std::array<double, 3>>& vertexes,
+			std::vector<std::array<double, 3>>& normals) //в паре первое -- треугольник, второе -- rgb цвет
 		{
 			RenderingUnit unit;
 			unit.uType = RenderingUnit::UnitType::Triangle;
 			unit.IndexCount = (int)Triangles.size() * 3;
 			if (unit.IndexCount == 0)return unit;
 
-			std::vector<VertexForColorTriangle> vertarray(vertexes.size());
 			std::vector<DWORD> indexarray(Triangles.size() * 3);
+			std::vector<VertexForColorTriangle> vertarray(vertexes.size());
 			for (int i = 0; i<vertexes.size(); i++)
 			{
 				vertarray[i].Pos.x = vertexes[i][0];
@@ -307,6 +310,8 @@ namespace DX
 				vertarray[i].Color.z = -1;
 				vertarray[i].Color.w = -1;
 			}
+			
+
 
 			for (int i = 0; i<Triangles.size(); i++)
 			{
